@@ -1,0 +1,33 @@
+
+loadkeys us
+timedatectl set-ntp true
+parted -s /dev/sda mklabel gpt
+parted -s -a optimal /dev/sda mkpart primary 0%     257MiB name 1 boot
+mkfs.btrfs --quiet -f --label boot /dev/sda1
+parted -s -a optimal /dev/sda mkpart primary 257MiB 100GiB name 2 aux
+parted -s -a optimal /dev/sda mkpart primary 100GiB 130GiB name 3 root
+cryptsetup -s 512 -i 5000 luksFormat /dev/sda3
+cryptsetup luksOpen /dev/sda3 root
+mkfs.f2fs -l root /dev/mapper/root
+dd if=/dev/urandom of=aci_cryptkeyfile.bin bs=1024 count=20 iflag=fullblock
+parted -s -a optimal /dev/sda mkpart primary 130GiB 140GiB name 4 var
+cryptsetup -s 512 -i 5000 --key-file aci_cryptkeyfile.bin luksFormat /dev/sda4
+cryptsetup --key-file aci_cryptkeyfile.bin luksOpen /dev/sda4 var
+mkfs.f2fs -l var /dev/mapper/var
+parted -s -a optimal /dev/sda mkpart primary 140GiB 150GiB name 5 tmp
+#mkfs.f2fs -l tmp /dev/sda5
+parted -s -a optimal /dev/sda mkpart primary 150GiB 100%   name 6 home
+cryptsetup -s 512 -i 5000 --key-file aci_cryptkeyfile.bin luksFormat /dev/sda6
+cryptsetup --key-file aci_cryptkeyfile.bin luksOpen /dev/sda6 home
+mkfs.f2fs -l home /dev/mapper/home
+mount /dev/mapper/root /mnt
+mv aci_cryptkeyfile.bin /mnt
+chmod 600 /mnt/aci_cryptkeyfile.bin
+mkdir /mnt/{boot,var,tmp,home}
+mount /dev/sda1 /mnt/boot
+#mount -o noexec,nosuid /dev/sda5 /mnt/tmp
+mount -o noexec,nosuid /dev/mapper/var /mnt/var
+mount -o noexec,nosuid /dev/mapper/home /mnt/home
+echo 'var   /dev/sda4   /aci_cryptkeyfile.bin ' >> /mnt/etc/crypttab
+echo 'tmp	  /dev/sda5	  /dev/urandom   tmp,cipher=aes-xts-plain64,size=256 ' >> /mnt/etc/crypttab
+echo 'home   /dev/sda6   /aci_cryptkeyfile.bin ' >> /mnt/etc/crypttab

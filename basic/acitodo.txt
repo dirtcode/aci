@@ -1,0 +1,24 @@
+# install minecraft
+yaourt -S minecraft-launcher
+
+# install google cloud platform sdk
+yaourt -S google-cloud-sdk
+
+# configure DE and uncomment ~/.zprofile commands
+
+# change DNS to 127.0.0.1
+
+# install Simple one time pad implementation with key generating support called onetimebluh
+yaourt -S otbluh
+
+# install visual studio code
+yaourt -S (code/visual-studio-code-bin)
+
+# install aic94xx-firmware & wd719x-firmware
+git clone https://aur.archlinux.org/aic94xx-firmware.git
+cd aic94xx-firmware
+makepkg -sri
+git clone https://aur.archlinux.org/wd719x-firmware.git
+cd wd719x-firmware
+makepkg -sri
+mkinitcpio -p linux
