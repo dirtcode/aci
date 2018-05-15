@@ -115,10 +115,15 @@ do
   case $answer in
     y )
       pacman -S --noconfirm xorg xorg-xinit lightdm lightdm-gtk-greeter vlc chromium \
-        keepassx2 virtualbox gimp audacity audacious evince atom dolphin \
+        keepassxc virtualbox gimp audacity audacious evince atom dolphin \
         libreoffice-fresh terminator pulseaudio pulseaudio-equalizer pulseaudio-alsa \
         arandr feh pavucontrol rofi alsa-utils scrot rxvt-unicode ttf-hack
       if [ $? -ne 0 ]; then; write_red_terminate "Cannot install X packages."; fi
+
+      pacman -S --noconfirm openbox obconf obmenu \
+        lxappearance-gtk3 lxappearance-obconf-gtk3 lxinput-gtk3 lxrandr-gtk3 lxtask-gtk3 lxmenu-data \
+        xfce4 xfce4-goodies pcmanfm-gtk3 xarchiver
+      if [ $? -ne 0 ]; then; write_red_terminate "Cannot install openbox packages."; fi
 
       pacman -S --noconfirm i3 dmenu  rxvt-unicode xorg-xbacklight cairo-dock
       if [ $? -ne 0 ]; then; write_red_terminate "Cannot install i3wm packages."; fi
