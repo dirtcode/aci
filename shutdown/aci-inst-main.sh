@@ -239,8 +239,9 @@ echo 'prompt fade' >> $ACI_USERHOME/.zshrc
 mkdir -p $ACI_USERHOME/.config/awesome/
 cp /etc/xdg/awesome/rc.lua $ACI_USERHOME/.config/awesome/rc.lua
 touch $ACI_USERHOME/.config/awesome/autorun.sh
-chmod +x $ACI_USERHOME/.config/awesome/autorun.sh
 chown -R $ACI_USERNAME:$ACI_USERGROUP $ACI_USERHOME/.config
+chmod -R 600 $ACI_USERHOME/.config
+chmod +x $ACI_USERHOME/.config/awesome/autorun.sh
 
 #  __________________________________________________________________________________________________________
 # [ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ]
@@ -254,7 +255,7 @@ if [ $? -ne 0 ]; then; write_red_terminate "Could not disable root terminal acce
 # init swap file
 ACI_SWAP_FILENAME=/swapfile.bin
 write_green ">>> Init swap file <<<"
-dd if=/dev/zero of=$ACI_SWAP_FILENAME bs=1M count=4096 status=progress
+dd if=/dev/zero of=$ACI_SWAP_FILENAME bs=1M count=4096 status=progress && sync
 chmod 600 $ACI_SWAP_FILENAME
 mkswap $ACI_SWAP_FILENAME
 if [ $? -ne 0 ]; then; write_red_terminate "Failed to make swap space from file."; fi
