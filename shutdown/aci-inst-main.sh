@@ -117,7 +117,8 @@ do
       pacman -S --noconfirm xorg xorg-xinit lightdm lightdm-gtk-greeter vlc chromium \
         keepassxc virtualbox gimp audacity audacious evince atom dolphin \
         libreoffice-fresh terminator pulseaudio pulseaudio-equalizer pulseaudio-alsa \
-        arandr feh pavucontrol rofi alsa-utils scrot rxvt-unicode ttf-hack
+        arandr feh pavucontrol rofi alsa-utils scrot rxvt-unicode ttf-hack \
+        xorg-xbacklight
       if [ $? -ne 0 ]; then; write_red_terminate "Cannot install X packages."; fi
 
       pacman -S --noconfirm openbox obconf obmenu \
