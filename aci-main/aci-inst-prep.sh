@@ -152,9 +152,9 @@ then
 else
   write_red_terminate "Failed to get mirrorlist."
 fi
-rankmirrors -n 4 /etc/pacman.d/mirrorlist.australia > /etc/pacman.d/mirrorlist
-if [ $? -ne 0 ]; then; cp /etc/pacman.d/mirrorlist.australia /etc/pacman.d/mirrorlist; fi
-
+#rankmirrors -n 4 /etc/pacman.d/mirrorlist.australia > /etc/pacman.d/mirrorlist
+#if [ $? -ne 0 ]; then; cp /etc/pacman.d/mirrorlist.australia /etc/pacman.d/mirrorlist; fi
+cp /etc/pacman.d/mirrorlist.australia  /etc/pacman.d/mirrorlist
 
 #  __________________________________________________________________________________________________________
 # [ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ]

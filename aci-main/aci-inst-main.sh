@@ -58,7 +58,7 @@ pacman -S --noconfirm openssh openssl \
   syslinux gptfdisk f2fs-tools btrfs-progs \
   iw wpa_supplicant wpa_actiond ifplugd \
   nftables nmap openvpn dnscrypt-proxy \
-  firejail  linux-hardened
+  firejail  linux-hardened sshfs encfs rsync
 if [ $? -ne 0 ]; then; write_red_terminate "Cannot install general packages."; fi
 
 #  __________________________________________________________________________________________________________
@@ -93,7 +93,7 @@ do
   read answer
   case $answer in
     y )
-      pacman -S --noconfirm xf86-input-synaptics xf86-video-amdgpu
+      pacman -S --noconfirm xf86-input-synaptics xf86-video-vesa xf86-video-ati xf86-video-intel xf86-video-amdgpu xf86-video-nouveau
       if [ $? -ne 0 ]; then; write_red_terminate "Cannot install laptop specific packages."; fi
       break
       ;;
@@ -115,10 +115,10 @@ do
   case $answer in
     y )
       pacman -S --noconfirm xorg xorg-xinit lightdm lightdm-gtk-greeter vlc chromium \
-        keepassxc virtualbox gimp audacity audacious evince atom dolphin \
+        keepassxc virtualbox virtualbox-host-modules-arch gimp audacity audacious evince atom dolphin \
         libreoffice-fresh terminator pulseaudio pulseaudio-equalizer pulseaudio-alsa \
         arandr feh pavucontrol rofi alsa-utils scrot rxvt-unicode ttf-hack \
-        xorg-xbacklight
+        xorg-xbacklight artwiz-fonts ttf-cheapskate termite ttf-roboto ttf-dejavu
       if [ $? -ne 0 ]; then; write_red_terminate "Cannot install X packages."; fi
 
       pacman -S --noconfirm openbox obconf obmenu \

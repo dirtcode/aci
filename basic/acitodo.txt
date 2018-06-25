@@ -22,3 +22,9 @@ git clone https://aur.archlinux.org/wd719x-firmware.git
 cd wd719x-firmware
 makepkg -sri
 mkinitcpio -p linux
+
+# install https://wiki.archlinux.org/index.php/Plymouth
+yaourt -S plymouth
+
+# for 128gb usb
+yaourt -S exfat-utils-autodetect
