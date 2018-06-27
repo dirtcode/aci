@@ -6,26 +6,6 @@ export ACI_USERNAME=dirt
 
 
 
-
-#  __________________________________________________________________________________________________________
-# [ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ]
-# create partitions
-write_green ">>> Create partitions <<<"
-parted -s /dev/sda print free
-while true
-do
-  echo -n "Is drive ready for partition creation [y][n]? "
-  read answer
-  case $answer in
-    y )
-      break
-      ;;
-    n )
-      write_red_terminate "Drive not ready."
-      ;;
-    * ) echo "Please answer yes or no.";;
-  esac
-done
 parted -s /dev/sda mklabel gpt
 parted -s -a optimal /dev/sda mkpart primary 0% 257MiB name 1 boot
 parted -s -a optimal /dev/sda mkpart primary 257MiB 100% name 2 lvm
@@ -68,6 +48,74 @@ pacstrap /mnt base base-devel zsh zsh-completions \
 genfstab -p -U /mnt > /mnt/etc/fstab
 
 arch-chroot /mnt /bin/zsh
+
+# arch-chroot commands
+
+      pacman -S --noconfirm git docker
+      systemctl enable docker
+      pacman -S --noconfirm xf86-input-synaptics xf86-video-vesa xf86-video-ati xf86-video-intel xf86-video-amdgpu xf86-video-nouveau
+      pacman -S --noconfirm xorg xorg-xinit lightdm lightdm-gtk-greeter vlc chromium \
+        keepassxc virtualbox virtualbox-host-modules-arch gimp audacity audacious evince atom dolphin \
+        libreoffice-fresh terminator pulseaudio pulseaudio-equalizer pulseaudio-alsa \
+        arandr feh pavucontrol rofi alsa-utils scrot rxvt-unicode ttf-hack \
+        xorg-xbacklight artwiz-fonts ttf-cheapskate termite ttf-roboto ttf-dejavu
+      pacman -S --noconfirm openbox obconf obmenu \
+        lxappearance-gtk3 lxappearance-obconf-gtk3 lxinput-gtk3 lxrandr-gtk3 lxtask-gtk3 lxmenu-data \
+        xfce4 xfce4-goodies pcmanfm-gtk3 xarchiver
+      echo "greeter-session=lightdm-gtk-greeter.desktop" >> /etc/lightdm/lightdm.conf
+      systemctl enable lightdm
+
+echo "en_AU.UTF-8 UTF-8" > /etc/locale.gen
+locale-gen
+echo "LANG=en_AU.UTF-8" > /etc/locale.conf
+export LANG=en_AU.UTF-8
+ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
+hwclock --systohc --utc
+echo "KEYMAP=us" > /etc/vconsole.conf
+
+syslinux-install_update -iam
+cp /boot/syslinux/syslinux.cfg /boot/syslinux/syslinux.cfg.b
+echo "DEFAULT arch" > /boot/syslinux/syslinux.cfg
+echo "LABEL arch" >> /boot/syslinux/syslinux.cfg
+echo "  LINUX ../vmlinuz-linux" >> /boot/syslinux/syslinux.cfg
+echo "  APPEND cryptdevice=/dev/sda2:lvm root=/dev/arch/root rw" >> /boot/syslinux/syslinux.cfg
+echo "  INITRD ../intel-ucode.img,../initramfs-linux.img" >> /boot/syslinux/syslinux.cfg
+
+cp /etc/mkinitcpio.conf /etc/mkinitcpio.conf.b
+echo "MODULES=()" > /etc/mkinitcpio.conf
+echo "BINARIES=()" >> /etc/mkinitcpio.conf
+echo "FILES=()" >> /etc/mkinitcpio.conf
+echo "HOOKS=(base udev autodetect modconf block encrypt lvm2 filesystems keyboard fsck)" >> /etc/mkinitcpio.conf
+mkinitcpio -p linux
+
+echo "$ACI_HOSTNAME" > /etc/hostname
+echo "127.0.0.1   localhost.localdomain   localhost $ACI_HOSTNAME" > /etc/hosts
+echo "::1         localhost.localdomain   localhost $ACI_HOSTNAME" >> /etc/hosts
+
+useradd -m -U -s /bin/zsh $ACI_USERNAME
+passwd user
+echo "$ACI_USERNAME ALL=(ALL) ALL" >> /etc/sudoers
+echo 'alias ls="ls --color=always"' >> /home/$ACI_USERNAME/.zshrc
+echo 'alias ll="ls -la --color=always"' >> /home/$ACI_USERNAME/.zshrc
+echo 'autoload -Uz promptinit' >> /home/$ACI_USERNAME/.zshrc
+echo 'promptinit' >> /home/$ACI_USERNAME/.zshrc
+echo 'prompt fade' >> /home/$ACI_USERNAME/.zshrc
+
+passwd -l root
+
+systemctl enable nftables
+
+echo "" >> /etc/pacman.conf
+echo "[archlinuxfr]" >> /etc/pacman.conf
+echo "SigLevel = Never" >> /etc/pacman.conf
+echo "Server = http://repo.archlinux.fr/\$arch" >> /etc/pacman.conf
+
+# run with 'user' after login
+cd /tmp
+git clone https://aur.archlinux.org/aurman.git
+cd aurman
+makepkg -si
+
 
 
 
