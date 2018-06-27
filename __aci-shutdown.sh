@@ -28,14 +28,54 @@ do
 done
 parted -s /dev/sda mklabel gpt
 parted -s -a optimal /dev/sda mkpart primary 0% 257MiB name 1 boot
-parted -s -a optimal /dev/sda mkpart primary 257MiB 48GiB name 2 root
-parted -s -a optimal /dev/sda mkpart primary 48GiB 100% name 3 home
+parted -s -a optimal /dev/sda mkpart primary 257MiB 100% name 2 lvm
+#parted -s -a optimal /dev/sda mkpart primary 257MiB 48GiB name 2 root
+#parted -s -a optimal /dev/sda mkpart primary 48GiB 100% name 3 home
+
+cryptsetup -c aes-xts-plain64 -s 512 -i 5000 -h sha512 --use-random luksFormat /dev/sda2
+cryptsetup luksOpen /dev/sda2 lvm
+pvcreate /dev/mapper/lvm
+vgcreate arch /dev/mapper/lvm
+lvcreate -C y -L 8G arch -n swap
+lvcreate -L 48G arch -n root
+lvcreate -l +100%FREE arch -n home
+vgchange -ay
+mkswap /dev/mapper/arch-swap
+swapon /dev/mapper/arch-swap
+
+mkfs.btrfs --quiet -f --label boot /dev/sda1
+mkfs.f2fs -l root /dev/mapper/arch-root
+mkfs.f2fs -l home /dev/mapper/arch-home
+
+mount /dev/mapper/arch-root /mnt
+mkdir /mnt/{boot,home}
+mount /dev/sda1 /mnt/boot
+mount /dev/mapper/arch-home /mnt/home
+
+loadkeys us
+timedatectl set-ntp true
+curl -o /etc/pacman.d/mirrorlist.all https://www.archlinux.org/mirrorlist/all/
+  awk '/^## Australia$/ {f=1} f==0 {next} /^$/ {exit} {print substr($0, 2)}' /etc/pacman.d/mirrorlist.all > /etc/pacman.d/mirrorlist.australia
+cp /etc/pacman.d/mirrorlist.australia  /etc/pacman.d/mirrorlist
+
+pacstrap /mnt base base-devel zsh zsh-completions \
+  grml-zsh-config openssh openssl \
+  acpi sysstat unrar wget p7zip intel-ucode \
+  syslinux gptfdisk f2fs-tools btrfs-progs \
+  iw wpa_supplicant wpa_actiond ifplugd \
+  nftables nmap openvpn dnscrypt-proxy \
+  firejail  linux-hardened sshfs encfs rsync
+genfstab -p -U /mnt > /mnt/etc/fstab
+
+arch-chroot /mnt /bin/zsh
+
+
 
 #  __________________________________________________________________________________________________________
 # [ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ▇ ▄ ▅ █ ▇ ▂ ▃ ▁ ▄ ▅ █ ▅ ▇ ]
 # encrypt partitions
 write_green ">>> Encrypt partitions <<<"
-cryptsetup -s 512 -i 5000 luksFormat /dev/sda2
+cryptsetup -c aes-xts-plain64 -s 512 -i 5000 -h sha512 luksFormat /dev/sda2
 if [ $? -ne 0 ]; then; write_red_terminate "Failed to encrypt root partition with interactive passphrase."; fi
 cryptsetup -s 512 -i 5000 luksFormat /dev/sda3
 #mkdir /etc/keys
